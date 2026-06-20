@@ -12,7 +12,7 @@ signupForm.addEventListener("input", (e) => {
   formData[e.target.name] = e.target.value;
 });
 
-signupForm.addEventListener("submit", (e) => {
+signupForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   if (formData.password !== formData.confirmPassword) {
@@ -20,8 +20,18 @@ signupForm.addEventListener("submit", (e) => {
     return;
   }
 
-  console.log(formData);
+  try {
+    const response = await axios.post("http://localhost:3000/user/signup", {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    });
 
-  // Example API call
-  // axios.post("http://localhost:3000/user/signup", formData)
+    alert(response.data.message);
+
+    window.location.href = "../Login/login.html";
+  } catch (err) {
+    alert(err.response?.data?.message || "Signup failed");
+  }
 });

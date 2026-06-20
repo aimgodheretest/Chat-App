@@ -1,5 +1,5 @@
 const loginData = {
-  email: "",
+  identifier: "",
   password: "",
 };
 
@@ -9,11 +9,19 @@ loginForm.addEventListener("input", (e) => {
   loginData[e.target.name] = e.target.value;
 });
 
-loginForm.addEventListener("submit", (e) => {
+loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  console.log(loginData);
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/user/login",
+      loginData,
+    );
 
-  // Example API call
-  // axios.post("http://localhost:3000/user/login", loginData)
+    localStorage.setItem("token", response.data.token);
+
+    alert("Login Successful");
+  } catch (err) {
+    alert(err.response?.data?.message || "Login Failed");
+  }
 });
