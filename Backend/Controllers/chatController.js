@@ -1,6 +1,6 @@
 const Message = require("../Models/messageTable");
 
-exports.sendMessage = async (req, res) => {
+const sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -20,4 +20,7 @@ exports.sendMessage = async (req, res) => {
       message: "Server Error",
     });
   }
+};
+module.exports = {
+  sendMessage,
 };
