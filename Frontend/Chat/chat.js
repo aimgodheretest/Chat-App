@@ -1,7 +1,5 @@
 const chatMessages = document.getElementById("chatMessages");
-
 const messageInput = document.getElementById("messageInput");
-
 const sendBtn = document.getElementById("sendBtn");
 
 function scrollToBottom() {
@@ -33,17 +31,42 @@ function addMessage(text, type = "sent") {
   scrollToBottom();
 }
 
-sendBtn.addEventListener("click", () => {
+async function saveMessage(text) {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+      "http://localhost:3000/chat/message",
+      {
+        message: text,
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      },
+    );
+
+    console.log(response.data);
+  } catch (err) {
+    console.log(err);
+
+    alert(err.response?.data?.message || "Unable to save message");
+  }
+}
+
+sendBtn.addEventListener("click", async () => {
   const text = messageInput.value.trim();
 
   if (!text) return;
 
   addMessage(text, "sent");
 
+  await saveMessage(text);
+
   messageInput.value = "";
 });
-
-messageInput.addEventListener("keypress", (e) => {
+messageInput.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
     sendBtn.click();
   }

@@ -3,12 +3,19 @@ const cors = require("cors");
 require("dotenv").config();
 const sequelize = require("./utils/db");
 const userRoutes = require("./Routes/userRouter");
-
+const User = require("./Models/userTable");
+const Message = require("./Models/messageTable");
+const chatRoutes = require("./Routes/chatRouter");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use("/user", userRoutes);
+app.use("/chat", chatRoutes);
+
+//ASSOCIATIONS:-
+User.hasMany(Message);
+Message.belongsTo(User);
 
 sequelize
   .sync()

@@ -20,7 +20,7 @@ loginForm.addEventListener("submit", async (e) => {
 
     localStorage.setItem("token", response.data.token);
 
-    alert("Login Successful");
+    window.location.href = "../Chat/chat.html";
   } catch (err) {
     alert(err.response?.data?.message || "Login Failed");
   }
