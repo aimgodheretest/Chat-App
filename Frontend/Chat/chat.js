@@ -1,8 +1,14 @@
 const chatMessages = document.getElementById("chatMessages");
-
 const messageInput = document.getElementById("messageInput");
-
 const sendBtn = document.getElementById("sendBtn");
+
+function parseJwt(token) {
+  return JSON.parse(atob(token.split(".")[1]));
+}
+
+const token = localStorage.getItem("token");
+
+const currentUser = parseJwt(token);
 
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -42,14 +48,16 @@ async function loadMessages() {
     chatMessages.innerHTML = "";
 
     response.data.forEach((msg) => {
+      const type = msg.userId === currentUser.userId ? "sent" : "received";
+
       addMessage(
         msg.message,
-        msg.user ? msg.user.name : "Unknown User",
+        msg.user?.name || "Unknown",
         new Date(msg.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        "received",
+        type,
       );
     });
   } catch (err) {
@@ -60,6 +68,12 @@ async function loadMessages() {
 async function saveMessage(text) {
   try {
     const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "../Login/login.html";
+    }
+
+    const currentUser = parseJwt(token);
 
     await axios.post(
       "http://localhost:3000/chat/message",
@@ -95,4 +109,10 @@ messageInput.addEventListener("keypress", async (e) => {
   }
 });
 
-window.addEventListener("load", loadMessages);
+window.addEventListener("load", () => {
+  loadMessages();
+
+  setInterval(() => {
+    loadMessages();
+  }, 2000);
+});
