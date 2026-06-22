@@ -23,7 +23,7 @@ const sendMessage = async (req, res) => {
 };
 const getMessages = async (req, res) => {
   try {
-    const messages = await Message.findAll({
+    let messages = await Message.findAll({
       include: [
         {
           model: User,

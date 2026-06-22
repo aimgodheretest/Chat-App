@@ -1,23 +1,21 @@
 const chatMessages = document.getElementById("chatMessages");
+
 const messageInput = document.getElementById("messageInput");
+
 const sendBtn = document.getElementById("sendBtn");
 
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function addMessage(text, type = "sent") {
-  const time = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
+function addMessage(text, sender, time, type) {
   const message = document.createElement("div");
 
   message.classList.add("message", type);
 
   message.innerHTML = `
     <div class="message-content">
+      <strong>${sender}</strong><br>
       ${text}
     </div>
 
@@ -31,11 +29,39 @@ function addMessage(text, type = "sent") {
   scrollToBottom();
 }
 
+async function loadMessages() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get("http://localhost:3000/chat/messages", {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    chatMessages.innerHTML = "";
+
+    response.data.forEach((msg) => {
+      addMessage(
+        msg.message,
+        msg.user ? msg.user.name : "Unknown User",
+        new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        "received",
+      );
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 async function saveMessage(text) {
   try {
     const token = localStorage.getItem("token");
 
-    const response = await axios.post(
+    await axios.post(
       "http://localhost:3000/chat/message",
       {
         message: text,
@@ -46,12 +72,8 @@ async function saveMessage(text) {
         },
       },
     );
-
-    console.log(response.data);
   } catch (err) {
     console.log(err);
-
-    alert(err.response?.data?.message || "Unable to save message");
   }
 }
 
@@ -60,14 +82,17 @@ sendBtn.addEventListener("click", async () => {
 
   if (!text) return;
 
-  addMessage(text, "sent");
-
   await saveMessage(text);
 
   messageInput.value = "";
+
+  loadMessages();
 });
+
 messageInput.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
     sendBtn.click();
   }
 });
+
+window.addEventListener("load", loadMessages);
