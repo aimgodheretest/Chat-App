@@ -2,6 +2,12 @@ const chatMessages = document.getElementById("chatMessages");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
+const socket = io("http://localhost:3000");
+
+socket.on("connect", () => {
+  console.log("Connected to Socket Server");
+});
+
 function parseJwt(token) {
   return JSON.parse(atob(token.split(".")[1]));
 }
