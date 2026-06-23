@@ -3,9 +3,6 @@ const cors = require("cors");
 require("dotenv").config();
 
 const http = require("http");
-const { Server } = require("socket.io");
-
-const socketAuth = require("./middleware/socketAuth");
 
 const sequelize = require("./utils/db");
 
@@ -15,17 +12,13 @@ const chatRoutes = require("./Routes/chatRouter");
 const User = require("./Models/userTable");
 const Message = require("./Models/messageTable");
 
+const initializeSocket = require("./socket-io");
+
 const app = express();
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
-
-io.use(socketAuth);
+initializeSocket(server);
 
 app.use(cors());
 app.use(express.json());
@@ -36,15 +29,6 @@ app.use("/chat", chatRoutes);
 //ASSOCIATIONS:-
 User.hasMany(Message);
 Message.belongsTo(User);
-
-// Socket Connection
-io.on("connection", (socket) => {
-  console.log(`${socket.user.name} Connected`);
-
-  socket.on("disconnect", () => {
-    console.log(`${socket.user.name} Disconnected`);
-  });
-});
 
 sequelize
   .sync()
@@ -59,4 +43,3 @@ sequelize
     console.log(err);
   });
 
-module.exports = io;
