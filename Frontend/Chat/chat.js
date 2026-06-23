@@ -2,6 +2,10 @@ const chatMessages = document.getElementById("chatMessages");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
+const receiverEmail = document.getElementById("receiverEmail");
+const joinRoomBtn = document.getElementById("joinRoomBtn");
+let currentRoom = "";
+
 const token = localStorage.getItem("token");
 
 const socket = io("http://localhost:3000", {
@@ -14,8 +18,37 @@ socket.on("connect", () => {
   console.log("Connected to Socket Server");
 });
 
+joinRoomBtn.addEventListener("click", () => {
+  const email = receiverEmail.value.trim();
+
+  if (!email) {
+    alert("Enter Email");
+    return;
+  }
+
+  currentRoom = generateRoomId(currentUser.name, email);
+
+  socket.emit("join_room", currentRoom);
+
+  joinRoomBtn.textContent = "Connected ✓";
+  joinRoomBtn.style.background = "#16a34a";
+
+  console.log("Joined Room:", currentRoom);
+});
+
 socket.on("connect_error", (err) => {
   console.log(err.message);
+});
+socket.on("receive_message", (data) => {
+  addMessage(
+    data.message,
+    data.sender,
+    new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    "received",
+  );
 });
 
 function parseJwt(token) {
@@ -23,6 +56,10 @@ function parseJwt(token) {
 }
 
 const currentUser = parseJwt(token);
+
+function generateRoomId(user1, user2) {
+  return [user1, user2].sort().join("_");
+}
 
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -112,9 +149,17 @@ sendBtn.addEventListener("click", async () => {
 
   await saveMessage(text);
 
-  messageInput.value = "";
+  if (!currentRoom) {
+    alert("Join a room first");
+    return;
+  }
 
-  loadMessages();
+  socket.emit("new_message", {
+    roomId: currentRoom,
+    message: text,
+  });
+
+  messageInput.value = "";
 });
 
 messageInput.addEventListener("keypress", async (e) => {
@@ -125,8 +170,4 @@ messageInput.addEventListener("keypress", async (e) => {
 
 window.addEventListener("load", () => {
   loadMessages();
-
-  setInterval(() => {
-    loadMessages();
-  }, 2000);
 });
