@@ -2,17 +2,25 @@ const chatMessages = document.getElementById("chatMessages");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
-const socket = io("http://localhost:3000");
+const token = localStorage.getItem("token");
+
+const socket = io("http://localhost:3000", {
+  auth: {
+    token,
+  },
+});
 
 socket.on("connect", () => {
   console.log("Connected to Socket Server");
 });
 
+socket.on("connect_error", (err) => {
+  console.log(err.message);
+});
+
 function parseJwt(token) {
   return JSON.parse(atob(token.split(".")[1]));
 }
-
-const token = localStorage.getItem("token");
 
 const currentUser = parseJwt(token);
 

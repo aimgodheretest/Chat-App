@@ -5,6 +5,8 @@ require("dotenv").config();
 const http = require("http");
 const { Server } = require("socket.io");
 
+const socketAuth = require("./middleware/socketAuth");
+
 const sequelize = require("./utils/db");
 
 const userRoutes = require("./Routes/userRouter");
@@ -23,6 +25,8 @@ const io = new Server(server, {
   },
 });
 
+io.use(socketAuth);
+
 app.use(cors());
 app.use(express.json());
 
@@ -35,10 +39,10 @@ Message.belongsTo(User);
 
 // Socket Connection
 io.on("connection", (socket) => {
-  console.log("User Connected:", socket.id);
+  console.log(`${socket.user.name} Connected`);
 
   socket.on("disconnect", () => {
-    console.log("User Disconnected:", socket.id);
+    console.log(`${socket.user.name} Disconnected`);
   });
 });
 
