@@ -6,6 +6,8 @@ module.exports = (io, socket) => {
   });
 
   socket.on("new_message", (data) => {
+    console.log("MESSAGE RECEIVED:", data);
+
     io.to(data.roomId).emit("receive_message", {
       sender: socket.user.name,
       message: data.message,

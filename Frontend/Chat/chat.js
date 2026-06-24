@@ -18,22 +18,30 @@ socket.on("connect", () => {
   console.log("Connected to Socket Server");
 });
 
-joinRoomBtn.addEventListener("click", () => {
-  const email = receiverEmail.value.trim();
+joinRoomBtn.addEventListener("click", async () => {
+  try {
+    const email = receiverEmail.value.trim();
 
-  if (!email) {
-    alert("Enter Email");
-    return;
+    if (!email) {
+      alert("Enter Email");
+      return;
+    }
+
+    const response = await axios.get(
+      `http://localhost:3000/user/find/${email}`,
+    );
+
+    currentRoom = generateRoomId(currentUser.email, response.data.email);
+
+    socket.emit("join_room", currentRoom);
+
+    joinRoomBtn.textContent = "Connected ✓";
+    joinRoomBtn.style.background = "#16a34a";
+
+    console.log("Joined Room:", currentRoom);
+  } catch (err) {
+    alert("User not found");
   }
-
-  currentRoom = generateRoomId(currentUser.name, email);
-
-  socket.emit("join_room", currentRoom);
-
-  joinRoomBtn.textContent = "Connected ✓";
-  joinRoomBtn.style.background = "#16a34a";
-
-  console.log("Joined Room:", currentRoom);
 });
 
 socket.on("connect_error", (err) => {
