@@ -22,6 +22,11 @@ joinRoomBtn.addEventListener("click", async () => {
   try {
     const email = receiverEmail.value.trim();
 
+    if (email === currentUser.email) {
+      alert("You cannot chat with yourself");
+      return;
+    }
+
     if (!email) {
       alert("Enter Email");
       return;
@@ -48,6 +53,8 @@ socket.on("connect_error", (err) => {
   console.log(err.message);
 });
 socket.on("receive_message", (data) => {
+  const type = data.sender === currentUser.name ? "sent" : "received";
+
   addMessage(
     data.message,
     data.sender,
@@ -55,7 +62,7 @@ socket.on("receive_message", (data) => {
       hour: "2-digit",
       minute: "2-digit",
     }),
-    "received",
+    type,
   );
 });
 
@@ -155,8 +162,6 @@ sendBtn.addEventListener("click", async () => {
 
   if (!text) return;
 
-  await saveMessage(text);
-
   if (!currentRoom) {
     alert("Join a room first");
     return;
@@ -176,6 +181,6 @@ messageInput.addEventListener("keypress", async (e) => {
   }
 });
 
-window.addEventListener("load", () => {
-  loadMessages();
-});
+// window.addEventListener("load", () => {
+//   loadMessages();
+// });
