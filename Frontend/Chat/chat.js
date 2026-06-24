@@ -3,8 +3,15 @@ const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
 const receiverEmail = document.getElementById("receiverEmail");
+
+const groupNameInput = document.getElementById("groupName");
+const createGroupBtn = document.getElementById("createGroupBtn");
+const joinGroupBtn = document.getElementById("joinGroupBtn");
+const activeGroup = document.getElementById("activeGroup");
+
 const joinRoomBtn = document.getElementById("joinRoomBtn");
 let currentRoom = "";
+let currentGroup = "";
 
 const token = localStorage.getItem("token");
 
@@ -16,6 +23,47 @@ const socket = io("http://localhost:3000", {
 
 socket.on("connect", () => {
   console.log("Connected to Socket Server");
+});
+createGroupBtn.addEventListener("click", () => {
+  const groupName = groupNameInput.value.trim();
+
+  if (!groupName) {
+    alert("Enter Group Name");
+    return;
+  }
+
+  currentGroup = groupName;
+
+  socket.emit("join_group", currentGroup);
+
+  activeGroup.style.display = "block";
+
+  activeGroup.innerHTML = `
+    Group: <strong>${currentGroup}</strong>
+  `;
+
+  console.log("Created Group:", currentGroup);
+});
+
+joinGroupBtn.addEventListener("click", () => {
+  const groupName = groupNameInput.value.trim();
+
+  if (!groupName) {
+    alert("Enter Group Name");
+    return;
+  }
+
+  currentGroup = groupName;
+
+  socket.emit("join_group", currentGroup);
+
+  activeGroup.style.display = "block";
+
+  activeGroup.innerHTML = `
+    Group: <strong>${currentGroup}</strong>
+  `;
+
+  console.log("Joined Group:", currentGroup);
 });
 
 joinRoomBtn.addEventListener("click", async () => {
@@ -53,6 +101,20 @@ socket.on("connect_error", (err) => {
   console.log(err.message);
 });
 socket.on("receive_message", (data) => {
+  const type = data.sender === currentUser.name ? "sent" : "received";
+
+  addMessage(
+    data.message,
+    data.sender,
+    new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    type,
+  );
+});
+
+socket.on("receive_group_message", (data) => {
   const type = data.sender === currentUser.name ? "sent" : "received";
 
   addMessage(
@@ -162,8 +224,22 @@ sendBtn.addEventListener("click", async () => {
 
   if (!text) return;
 
+  // GROUP CHAT
+  if (currentGroup) {
+    socket.emit("group_message", {
+      groupName: currentGroup,
+      message: text,
+    });
+
+    messageInput.value = "";
+
+    return;
+  }
+
+  // PERSONAL CHAT
   if (!currentRoom) {
     alert("Join a room first");
+
     return;
   }
 
