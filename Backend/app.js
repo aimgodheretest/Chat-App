@@ -14,6 +14,8 @@ const Message = require("./Models/messageTable");
 
 const initializeSocket = require("./socket-io");
 
+const mediaRoutes = require("./Routes/mediaRouter");
+
 const app = express();
 
 const server = http.createServer(app);
@@ -25,6 +27,8 @@ app.use(express.json());
 
 app.use("/user", userRoutes);
 app.use("/chat", chatRoutes);
+
+app.use("/media", mediaRoutes);
 
 //ASSOCIATIONS:-
 User.hasMany(Message);
@@ -42,4 +46,3 @@ sequelize
   .catch((err) => {
     console.log(err);
   });
-

@@ -11,4 +11,12 @@ module.exports = (io, socket) => {
       message: data.message,
     });
   });
+
+  // GROUP MEDIA
+  socket.on("group_media", (data) => {
+    io.to(data.groupName).emit("receive_group_media", {
+      sender: socket.user.name,
+      url: data.url,
+    });
+  });
 };

@@ -13,4 +13,12 @@ module.exports = (io, socket) => {
       message: data.message,
     });
   });
+
+  // PERSONAL MEDIA
+  socket.on("media_message", (data) => {
+    io.to(data.roomId).emit("receive_media", {
+      sender: socket.user.name,
+      url: data.url,
+    });
+  });
 };

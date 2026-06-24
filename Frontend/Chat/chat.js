@@ -1,6 +1,8 @@
 const chatMessages = document.getElementById("chatMessages");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
+const mediaBtn = document.getElementById("mediaBtn");
+const mediaInput = document.getElementById("mediaInput");
 
 const receiverEmail = document.getElementById("receiverEmail");
 
@@ -128,6 +130,18 @@ socket.on("receive_group_message", (data) => {
   );
 });
 
+socket.on("receive_media", (data) => {
+  const type = data.sender === currentUser.name ? "sent" : "received";
+
+  addMedia(data.url, data.sender, type);
+});
+
+socket.on("receive_group_media", (data) => {
+  const type = data.sender === currentUser.name ? "sent" : "received";
+
+  addMedia(data.url, data.sender, type);
+});
+
 function parseJwt(token) {
   return JSON.parse(atob(token.split(".")[1]));
 }
@@ -156,6 +170,23 @@ function addMessage(text, sender, time, type) {
     <span class="timestamp">
       ${time}
     </span>
+  `;
+
+  chatMessages.appendChild(message);
+
+  scrollToBottom();
+}
+
+function addMedia(url, sender, type) {
+  const message = document.createElement("div");
+
+  message.classList.add("message", type);
+
+  message.innerHTML = `
+    <div class="message-content">
+      <strong>${sender}</strong><br>
+      <img src="${url}" width="200">
+    </div>
   `;
 
   chatMessages.appendChild(message);
@@ -251,6 +282,51 @@ sendBtn.addEventListener("click", async () => {
   messageInput.value = "";
 });
 
+mediaBtn.addEventListener("click", () => {
+  mediaInput.click();
+});
+
+mediaInput.addEventListener("change", async () => {
+  try {
+    if (!currentRoom && !currentGroup) {
+      alert("Join a chat first");
+      return;
+    }
+
+    const file = mediaInput.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const response = await axios.post(
+      "http://localhost:3000/media/upload",
+      formData,
+    );
+
+    const fileUrl = response.data.fileUrl;
+
+    if (currentGroup) {
+      socket.emit("group_media", {
+        groupName: currentGroup,
+        url: fileUrl,
+      });
+    } else {
+      socket.emit("media_message", {
+        roomId: currentRoom,
+        url: fileUrl,
+      });
+    }
+
+    mediaInput.value = "";
+  } catch (err) {
+    console.log(err);
+
+    alert("Media upload failed");
+  }
+});
 messageInput.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
     sendBtn.click();
