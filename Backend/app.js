@@ -11,10 +11,12 @@ const chatRoutes = require("./Routes/chatRouter");
 
 const User = require("./Models/userTable");
 const Message = require("./Models/messageTable");
+const ArchivedChat = require("./Models/archivedChatTable");
 
 const initializeSocket = require("./socket-io");
 
 const mediaRoutes = require("./Routes/mediaRouter");
+require("./Jobs/archiveChats");
 
 const app = express();
 
@@ -33,6 +35,9 @@ app.use("/media", mediaRoutes);
 //ASSOCIATIONS:-
 User.hasMany(Message);
 Message.belongsTo(User);
+
+User.hasMany(ArchivedChat);
+ArchivedChat.belongsTo(User);
 
 sequelize
   .sync()
