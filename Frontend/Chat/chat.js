@@ -4,6 +4,9 @@ const sendBtn = document.getElementById("sendBtn");
 const mediaBtn = document.getElementById("mediaBtn");
 const mediaInput = document.getElementById("mediaInput");
 
+const aiSuggestions = document.getElementById("aiSuggestions");
+const smartReplies = document.getElementById("smartReplies");
+
 const receiverEmail = document.getElementById("receiverEmail");
 
 const groupNameInput = document.getElementById("groupName");
@@ -114,6 +117,8 @@ socket.on("receive_message", (data) => {
     }),
     type,
   );
+
+  getSmartReplies(data.message);
 });
 
 socket.on("receive_group_message", (data) => {
@@ -128,6 +133,8 @@ socket.on("receive_group_message", (data) => {
     }),
     type,
   );
+
+  getSmartReplies(data.message);
 });
 
 socket.on("receive_media", (data) => {
@@ -147,6 +154,8 @@ function parseJwt(token) {
 }
 
 const currentUser = parseJwt(token);
+
+let predictionTimer = null;
 
 function generateRoomId(user1, user2) {
   return [user1, user2].sort().join("_");
@@ -192,6 +201,32 @@ function addMedia(url, sender, type) {
   chatMessages.appendChild(message);
 
   scrollToBottom();
+}
+
+async function getSmartReplies(message) {
+  try {
+    const response = await axios.post("http://localhost:3000/ai/reply", {
+      message,
+    });
+
+    smartReplies.innerHTML = "";
+
+    response.data.replies.forEach((reply) => {
+      const btn = document.createElement("button");
+
+      btn.className = "reply-btn";
+
+      btn.innerText = reply;
+
+      btn.onclick = () => {
+        messageInput.value = reply;
+      };
+
+      smartReplies.appendChild(btn);
+    });
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function loadMessages() {
@@ -327,6 +362,48 @@ mediaInput.addEventListener("change", async () => {
     alert("Media upload failed");
   }
 });
+
+messageInput.addEventListener("input", () => {
+  const text = messageInput.value.trim();
+
+  clearTimeout(predictionTimer);
+
+  if (text.length < 5) {
+    aiSuggestions.innerHTML = "";
+    return;
+  }
+
+  predictionTimer = setTimeout(async () => {
+    try {
+      console.log("Predicting for:", text);
+      const response = await axios.post("http://localhost:3000/ai/predict", {
+        text,
+      });
+      console.log(response.data);
+      aiSuggestions.innerHTML = "";
+
+      response.data.suggestions.forEach((suggestion) => {
+        console.log("Suggestion:", suggestion);
+        const chip = document.createElement("div");
+
+        chip.className = "ai-suggestion";
+
+        chip.innerText = suggestion;
+
+        chip.onclick = () => {
+          messageInput.value += " " + suggestion;
+
+          aiSuggestions.innerHTML = "";
+        };
+
+        aiSuggestions.appendChild(chip);
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }, 700);
+});
+
 messageInput.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
     sendBtn.click();

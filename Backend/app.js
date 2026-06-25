@@ -17,6 +17,7 @@ const initializeSocket = require("./socket-io");
 
 const mediaRoutes = require("./Routes/mediaRouter");
 require("./Jobs/archiveChats");
+const aiRoutes = require("./Routes/aiRouter");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/user", userRoutes);
 app.use("/chat", chatRoutes);
 
 app.use("/media", mediaRoutes);
+app.use("/ai", aiRoutes);
 
 //ASSOCIATIONS:-
 User.hasMany(Message);

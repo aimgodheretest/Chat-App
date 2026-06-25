@@ -200,3 +200,59 @@ body {
     padding: 10px 15px;
     border-bottom: 1px solid #334155;
 }
+
+/* 
+AI Suggestions
+ */
+
+.ai-suggestions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 15px;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+}
+
+.ai-suggestion {
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.ai-suggestion:hover {
+    background: #1d4ed8;
+}
+
+
+/* 
+   Smart Replies
+ */
+
+.smart-replies {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 15px;
+    background: #0f172a;
+    border-top: 1px solid #334155;
+}
+
+.reply-btn {
+    background: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 13px;
+}
+
+.reply-btn:hover {
+    background: #15803d;
+}
